@@ -22,6 +22,7 @@ function self_destruct_summon(self, summon_xp )
 		s.target.entity = world:get_player()
 		s.data.ai.state = "hunt"
 		s.attributes.experience_value = summon_xp
+		world:add_buff( s, "buff_cult_summon", 200 )
 		world:play_sound( "summon", s )
 		ui:spawn_fx( nil, "fx_summon", nil, world:get_position( s ) )	
 	end
@@ -41,6 +42,31 @@ function fanatic_action(self)
 		world:lua_callback( self, "self_destruct" )
 	end
 end
+
+register_blueprint "buff_cult_summon"
+{
+	flags = { EF_NOPICKUP }, 
+	text = {
+		name    = "Summoned",
+		desc    = "Briefly protects against splash damage and fire",
+	},
+	callbacks = {
+		on_die = [[
+			function ( self )
+				world:mark_destroy( self )
+			end
+		]],
+	},
+	attributes = {
+		splash_mod = 0.0,
+		resist = {
+            ignite = 200,
+        },
+	},
+	ui_buff = {
+		color = MAGENTA,
+	},
+}
 
 register_blueprint "zealot_self_destruct"
 {
@@ -273,7 +299,8 @@ register_blueprint "cult_sacrifice"
 						local s  = world:get_level():add_entity( "fiend", c, nil )
 						s.target.entity = world:get_player()
 						s.data.ai.state = "hunt"
-						s.attributes.experience_value = summon_xp
+						s.attributes.experience_value = summon_xp						
+						world:add_buff( s, "buff_cult_summon", 200 )
 						world:play_sound( "summon", s )
 						ui:spawn_fx( nil, "fx_summon", nil, world:get_position( s ) )
 					end	

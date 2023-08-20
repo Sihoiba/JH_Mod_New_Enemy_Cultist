@@ -72,7 +72,7 @@ register_blueprint "zealot_self_destruct"
 {
 	attributes = {
 		damage    = 25,
-		explosion = 3,
+		explosion = 2,
 		gib_factor= 2,
 	},
 	weapon = {
@@ -103,8 +103,8 @@ register_blueprint "zealot_self_destruct"
 register_blueprint "cultist_self_destruct"
 {
 	attributes = {
-		damage    = 40,
-		explosion = 3,
+		damage    = 30,
+		explosion = 2,
 		gib_factor= 2,
 	},
 	weapon = {
@@ -136,7 +136,7 @@ register_blueprint "cultist_leader_self_destruct"
 {
 	attributes = {
 		damage    = 40,
-		explosion = 3,
+		explosion = 2,
 		gib_factor= 2,
 	},
 	weapon = {
@@ -169,7 +169,7 @@ register_blueprint "zealot"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		{ keywords = { "test" }, weight = 150 },
+		-- { keywords = { "test" }, weight = 150 },
 		{ 1, keywords = { "europa", "former", "former2", "civilian" }, weight = 150 },
 		{ 2, keywords = { "europa", "former", "former2", "civilian" }, weight = 50 },
 		{ 4, keywords = { "europa", "former", "former2", "civilian" }, weight = 25, dmin = 12 },
@@ -271,8 +271,8 @@ register_blueprint "cult_sacrifice"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		{ keywords = { "test" }, weight = 150 },
-		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
+		-- { keywords = { "test" }, weight = 150 },
+		-- { { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
 		{ 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 100 },
 		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 50 },
 	},
@@ -333,7 +333,7 @@ register_blueprint "cult_leader"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		{ { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },			
+		-- { { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },			
 		{ { "cult_leader", "cultist", "cultist" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 250, dmin = 20 },
 		{ { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 250, dmin = 21 },
 		{ 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 150 },

@@ -11,20 +11,25 @@ end
 
 function self_destruct_summon(self, summon_xp )
 	if self.data.summon then
+		nova.log(tostring(self).." is summoning on death - getting area")
 		local ar = area.around(world:get_position( self ), 1 )
 		ar:clamp( world:get_level():get_area() )
-		local c = generator.random_safe_spawn_coord( world:get_level(), ar, world:get_position( self ), 1 )
+		nova.log(tostring(self).." is summoning on death - getting safe spawn coords")
+		local c = generator.random_safe_spawn_coord( world:get_level(), ar, world:get_position( self ), 1 )		
 		local summon = self.data.killed_summon
 		if self.data.suicide then
 			summon = self.data.suicide_summon
 		end
+		nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
 		local s  = world:get_level():add_entity( summon, c, nil )
 		s.target.entity = world:get_player()
 		s.data.ai.state = "hunt"
 		s.attributes.experience_value = summon_xp
+		nova.log(tostring(self).." is summoning on death - applying buff to the summons")
 		world:add_buff( s, "buff_cult_summon", 200 )
 		world:play_sound( "summon", s )
-		ui:spawn_fx( nil, "fx_summon", nil, world:get_position( s ) )	
+		nova.log(tostring(self).." is summoning on death - applying spawn fx")
+		ui:spawn_fx( nil, "fx_summon", nil, c )	
 	end
 end
 
@@ -169,7 +174,7 @@ register_blueprint "zealot"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		-- { keywords = { "test" }, weight = 150 },
+		{ keywords = { "test" }, weight = 150 },
 		{ 1, keywords = { "europa", "former", "former2", "civilian" }, weight = 150 },
 		{ 2, keywords = { "europa", "former", "former2", "civilian" }, weight = 50 },
 		{ 4, keywords = { "europa", "former", "former2", "civilian" }, weight = 25, dmin = 12 },
@@ -272,7 +277,7 @@ register_blueprint "cult_sacrifice"
 	lists = {
 		group = "being",
 		-- { keywords = { "test" }, weight = 150 },
-		-- { { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
+		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
 		{ 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 100 },
 		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 50 },
 	},
@@ -333,7 +338,7 @@ register_blueprint "cult_leader"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		-- { { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },			
+		{ { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },			
 		{ { "cult_leader", "cultist", "cultist" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 250, dmin = 20 },
 		{ { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 250, dmin = 21 },
 		{ 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 150 },

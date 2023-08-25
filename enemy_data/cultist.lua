@@ -1,3 +1,55 @@
+function cultist_safe_spawn_coord_spiral_out( self, start_coord, max_range )
+	local max_range = max_range or 6
+	
+	local floor_id = self:get_nid( "floor" )
+	local function can_spawn( p, c )
+		if self:raw_get_cell( c ) ~= floor_id then return false end
+		if self:get_cell_flags( c )[ EF_NOSPAWN ] then return false end
+		if not p then return true end
+
+		local pc = p - c
+		if pc.x < 0 then pc.x = -pc.x end
+		if pc.y < 0 then pc.y = -pc.y end
+		return pc.x <= max_range or pc.y <= max_range
+	end
+	
+	local function spiral_get_values(range)
+		local cx = 0
+		local cy = 0
+		local d = 1
+		local m = 1
+		local spiral_coords = {}
+		while cx <= range and cy <= range do
+			while (2 * cx * d) < m do
+				table.insert(spiral_coords, {x=cx, y=cy})
+				cx = cx + d
+			end
+			while (2 * cy * d) < m do
+				table.insert(spiral_coords, {x=cx, y=cy})
+				cy = cy + d
+			end
+			d = -1 * d
+			m = m + 1			
+		end
+		return spiral_coords
+	end
+	
+	local p = start_coord
+	if can_spawn( p, p ) then
+		return p
+	end
+	
+	local spawn_coords = spiral_get_values(max_range)
+	for k,v in ipairs(spawn_coords) do
+		p.x = start_coord.x + v.x
+		p.y = start_coord.y + v.y
+		nova.log("Checking "..tostring(p.x)..","..tostring(p.y))
+		if can_spawn( start_coord, p ) then
+			return p
+		end
+	end
+end
+
 function self_destruct_effect( self, destruct_type )
 	if self:child("fanatic_attack") then
 		world:destroy( self:child("fanatic_attack") )
@@ -11,25 +63,25 @@ end
 
 function self_destruct_summon(self, summon_xp )
 	if self.data.summon then
-		nova.log(tostring(self).." is summoning on death - getting area")
-		local ar = area.around(world:get_position( self ), 1 )
-		ar:clamp( world:get_level():get_area() )
-		nova.log(tostring(self).." is summoning on death - getting safe spawn coords")
-		local c = generator.random_safe_spawn_coord( world:get_level(), ar, world:get_position( self ), 1 )		
-		local summon = self.data.killed_summon
-		if self.data.suicide then
-			summon = self.data.suicide_summon
-		end
-		nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
-		local s  = world:get_level():add_entity( summon, c, nil )
-		s.target.entity = world:get_player()
-		s.data.ai.state = "hunt"
-		s.attributes.experience_value = summon_xp
-		nova.log(tostring(self).." is summoning on death - applying buff to the summons")
-		world:add_buff( s, "buff_cult_summon", 200 )
-		world:play_sound( "summon", s )
-		nova.log(tostring(self).." is summoning on death - applying spawn fx")
-		ui:spawn_fx( nil, "fx_summon", nil, c )	
+		nova.log(tostring(self).." is summoning on death")
+		local c = cultist_safe_spawn_coord_spiral_out( world:get_level(), world:get_position( self ), 3 )
+		
+		if c then
+			local summon = self.data.killed_summon
+			if self.data.suicide then
+				summon = self.data.suicide_summon
+			end
+			nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
+			local s  = world:get_level():add_entity( summon, c, nil )
+			s.target.entity = world:get_player()
+			s.data.ai.state = "hunt"
+			s.attributes.experience_value = summon_xp			
+			world:add_buff( s, "buff_cult_summon", 200 )
+			world:play_sound( "summon", s )
+			ui:spawn_fx( nil, "fx_summon", nil, c )	
+		else 
+			nova.log(tostring(self).." no where safe to summon")
+		end	
 	end
 end
 
@@ -226,6 +278,7 @@ register_blueprint "cultist"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
+		-- { keywords = { "test" }, weight = 150 },
 		{ 1, keywords = { "io", "former", "former3", "civilian" }, weight = 150 },
 		{ 2, keywords = { "io", "former", "former3", "civilian" }, weight = 50 },
 	},
@@ -276,8 +329,8 @@ register_blueprint "cult_sacrifice"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		-- { keywords = { "test" }, weight = 150 },
-		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
+		{ keywords = { "test" }, weight = 150 },
+		-- { { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
 		{ 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 100 },
 		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 50 },
 	},
@@ -297,18 +350,23 @@ register_blueprint "cult_sacrifice"
 			function( self )				
 				self_destruct_effect( self, "fanatic_self_destruct" )
 				if self.data.summon then
-					local ar = area.around(world:get_position( self ), 1 )
-					ar:clamp( world:get_level():get_area() )
+					nova.log(tostring(self).." is summoning on death")
 					for i = 1,5 do
-						local c = generator.random_safe_spawn_coord( world:get_level(), ar, world:get_position( self ), 1 )				
-						local s  = world:get_level():add_entity( "fiend", c, nil )
-						s.target.entity = world:get_player()
-						s.data.ai.state = "hunt"
-						s.attributes.experience_value = summon_xp						
-						world:add_buff( s, "buff_cult_summon", 200 )
-						world:play_sound( "summon", s )
-						ui:spawn_fx( nil, "fx_summon", nil, world:get_position( s ) )
-					end	
+						local c = cultist_safe_spawn_coord_spiral_out( world:get_level(), world:get_position( self ), 3 )
+						
+						if c then							
+							nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
+							local s  = world:get_level():add_entity( "fiend", c, nil )
+							s.target.entity = world:get_player()
+							s.data.ai.state = "hunt"
+							s.attributes.experience_value = summon_xp			
+							world:add_buff( s, "buff_cult_summon", 200 )
+							world:play_sound( "summon", s )
+							ui:spawn_fx( nil, "fx_summon", nil, c )	
+						else 
+							nova.log(tostring(self).." no where safe to summon")
+						end
+					end					
 				end		
 			end
 		]=],
@@ -338,7 +396,7 @@ register_blueprint "cult_leader"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		{ { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },			
+		-- { { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },			
 		{ { "cult_leader", "cultist", "cultist" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 250, dmin = 20 },
 		{ { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 250, dmin = 21 },
 		{ 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 150 },

@@ -7,7 +7,12 @@ function cultist_safe_spawn_coord_spiral_out( self, start_coord, max_range )
 		if self:get_cell_flags( c )[ EF_NOSPAWN ] then return false end
 		if self:get_cell_flags( c )[ EF_NOMOVE ] then return false end
 		local being = world:get_level():get_being( c )		
-		if being then return false end	
+		if being then return false end
+		for e in world:get_level():entities( c ) do
+			if e.flags and e.flags.data and e.flags.data [ EF_NOMOVE ] then 
+				return false 
+			end
+		end
 		if not p then return true end
 
 		local pc = p - c

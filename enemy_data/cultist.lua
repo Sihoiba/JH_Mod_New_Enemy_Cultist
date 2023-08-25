@@ -5,6 +5,9 @@ function cultist_safe_spawn_coord_spiral_out( self, start_coord, max_range )
 	local function can_spawn( p, c )
 		if self:raw_get_cell( c ) ~= floor_id then return false end
 		if self:get_cell_flags( c )[ EF_NOSPAWN ] then return false end
+		if self:get_cell_flags( c )[ EF_NOMOVE ] then return false end
+		local being = world:get_level():get_being( c )		
+		if being then return false end	
 		if not p then return true end
 
 		local pc = p - c
@@ -47,6 +50,22 @@ function cultist_safe_spawn_coord_spiral_out( self, start_coord, max_range )
 		if can_spawn( start_coord, p ) then
 			return p
 		end
+	end
+end
+
+function spawn_fiend( self )
+	local c = cultist_safe_spawn_coord_spiral_out( world:get_level(), world:get_position( self ), 3 )
+	if c then							
+		nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
+		local s  = world:get_level():add_entity( "fiend", c, nil )
+		s.target.entity = world:get_player()
+		s.data.ai.state = "hunt"
+		s.attributes.experience_value = summon_xp			
+		world:add_buff( s, "buff_cult_summon", 200 )
+		world:play_sound( "summon", s )
+		ui:spawn_fx( nil, "fx_summon", nil, c )	
+	else 
+		nova.log(tostring(self).." no where safe to summon")
 	end
 end
 
@@ -351,22 +370,11 @@ register_blueprint "cult_sacrifice"
 				self_destruct_effect( self, "fanatic_self_destruct" )
 				if self.data.summon then
 					nova.log(tostring(self).." is summoning on death")
-					for i = 1,5 do
-						local c = cultist_safe_spawn_coord_spiral_out( world:get_level(), world:get_position( self ), 3 )
-						
-						if c then							
-							nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
-							local s  = world:get_level():add_entity( "fiend", c, nil )
-							s.target.entity = world:get_player()
-							s.data.ai.state = "hunt"
-							s.attributes.experience_value = summon_xp			
-							world:add_buff( s, "buff_cult_summon", 200 )
-							world:play_sound( "summon", s )
-							ui:spawn_fx( nil, "fx_summon", nil, c )	
-						else 
-							nova.log(tostring(self).." no where safe to summon")
-						end
-					end					
+					spawn_fiend( self )
+					spawn_fiend( self )
+					spawn_fiend( self )
+					spawn_fiend( self )
+					spawn_fiend( self )
 				end		
 			end
 		]=],

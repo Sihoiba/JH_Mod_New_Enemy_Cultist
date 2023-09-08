@@ -12,6 +12,9 @@ function cultist_safe_spawn_coord_spiral_out( self, start_coord, max_range )
 			if e.flags and e.flags.data and e.flags.data [ EF_NOMOVE ] then 
 				return false 
 			end
+			if e.data and e.data.is_player then 
+				return false 
+			end
 		end
 		if not p then return true end
 
@@ -353,8 +356,8 @@ register_blueprint "cult_sacrifice"
 	blueprint = "zombie",
 	lists = {
 		group = "being",
-		{ keywords = { "test" }, weight = 150 },
-		-- { { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
+		-- { keywords = { "test" }, weight = 150 },
+		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
 		{ 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 100 },
 		{ { "cultist", "cultist", "cult_sacrifice" }, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 50 },
 	},

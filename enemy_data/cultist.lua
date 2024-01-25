@@ -1,68 +1,5 @@
-function cultist_safe_spawn_coord_spiral_out( self, start_coord, max_range )
-    local max_range = max_range or 6
-
-    local floor_id = self:get_nid( "floor" )
-    local function can_spawn( p, c )
-        if self:raw_get_cell( c ) ~= floor_id then return false end
-        if self:get_cell_flags( c )[ EF_NOSPAWN ] then return false end
-        if self:get_cell_flags( c )[ EF_NOMOVE ] then return false end
-        local being = world:get_level():get_being( c )
-        if being then return false end
-        for e in world:get_level():entities( c ) do
-            if e.flags and e.flags.data and e.flags.data [ EF_NOMOVE ] then
-                return false
-            end
-            if e.data and e.data.is_player then
-                return false
-            end
-        end
-        if not p then return true end
-
-        local pc = p - c
-        if pc.x < 0 then pc.x = -pc.x end
-        if pc.y < 0 then pc.y = -pc.y end
-        return pc.x <= max_range or pc.y <= max_range
-    end
-
-    local function spiral_get_values(range)
-        local cx = 0
-        local cy = 0
-        local d = 1
-        local m = 1
-        local spiral_coords = {}
-        while cx <= range and cy <= range do
-            while (2 * cx * d) < m do
-                table.insert(spiral_coords, {x=cx, y=cy})
-                cx = cx + d
-            end
-            while (2 * cy * d) < m do
-                table.insert(spiral_coords, {x=cx, y=cy})
-                cy = cy + d
-            end
-            d = -1 * d
-            m = m + 1
-        end
-        return spiral_coords
-    end
-
-    local p = start_coord
-    if can_spawn( p, p ) then
-        return p
-    end
-
-    local spawn_coords = spiral_get_values(max_range)
-    for k,v in ipairs(spawn_coords) do
-        p.x = start_coord.x + v.x
-        p.y = start_coord.y + v.y
-        nova.log("Checking "..tostring(p.x)..","..tostring(p.y))
-        if can_spawn( start_coord, p ) then
-            return p
-        end
-    end
-end
-
 function spawn_fiend( self )
-    local c = cultist_safe_spawn_coord_spiral_out( world:get_level(), world:get_position( self ), 3 )
+    local c = world:get_level():drop_coord(world:get_position( self ))
     if c then
         nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
         local s  = world:get_level():add_entity( "fiend", c, nil )
@@ -91,7 +28,7 @@ end
 function self_destruct_summon(self, summon_xp )
     if self.data.summon then
         nova.log(tostring(self).." is summoning on death")
-        local c = cultist_safe_spawn_coord_spiral_out( world:get_level(), world:get_position( self ), 3 )
+        local c = world:get_level():drop_coord(world:get_position( self ))
 
         if c then
             local summon = self.data.killed_summon
@@ -253,7 +190,7 @@ register_blueprint "zealot"
     blueprint = "zombie",
     lists = {
         group = "being",
-        { keywords = { "test" }, weight = 150 },
+        { keywords = { "test4" }, weight = 150 },
         { 1, keywords = { "europa", "former", "former2", "civilian" }, weight = 100 },
         { 2, keywords = { "europa", "former", "former2", "civilian" }, weight = 50 },
         { 4, keywords = { "europa", "former", "former2", "civilian" }, weight = 25, dmin = 12 },
@@ -412,7 +349,7 @@ register_blueprint "cult_leader"
     blueprint = "zombie",
     lists = {
         group = "being",
-        -- { { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 150 },
+        { { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "test4" }, weight = 150 },
         { { "cult_leader", "cultist", "cultist" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 100, dmin = 20 },
         { { "cult_leader", "cultist", "cultist", "cult_sacrifice" }, keywords = { "pack", "io", "beyond", "former", "former3", "civilian" }, weight = 50, dmin = 21 },
         { 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 150 },

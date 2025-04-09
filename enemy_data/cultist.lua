@@ -4,7 +4,7 @@ function spawn_fiend( self )
         nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
         local s  = world:get_level():add_entity( "fiend", c, nil )
         s.target.entity = world:get_player()
-        s.data.ai.state = "hunt"
+        s.data.ai.state = "find"
         s.attributes.experience_value = summon_xp
         world:add_buff( s, "buff_cult_summon", 200 )
         world:play_sound( "summon", s )
@@ -38,7 +38,7 @@ function self_destruct_summon(self, summon_xp )
             nova.log(tostring(self).." is summoning on death - safe spawn coords x:"..tostring(c.x)..", y:"..tostring(c.y))
             local s  = world:get_level():add_entity( summon, c, nil )
             s.target.entity = world:get_player()
-            s.data.ai.state = "hunt"
+            s.data.ai.state = "find"
             s.attributes.experience_value = summon_xp
             world:add_buff( s, "buff_cult_summon", 200 )
             world:play_sound( "summon", s )
@@ -293,7 +293,7 @@ register_blueprint "cult_sacrifice"
     blueprint = "zombie",
     lists = {
         group = "being",
-        -- { keywords = { "test" }, weight = 150 },
+        { keywords = { "test" }, weight = 150 },
         { { "cultist", "cultist", "cult_sacrifice" }, keywords = { "test" }, weight = 100 },
         { 1, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 50 },
         { { "cultist", "cultist", "cult_sacrifice" }, keywords = { "io", "beyond", "former", "former3", "civilian" }, weight = 25 },

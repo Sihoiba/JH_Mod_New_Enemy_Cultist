@@ -19,9 +19,9 @@ function self_destruct_effect( self, destruct_type )
         world:destroy( self:child("fanatic_attack") )
         if self.health.current > 0 then self.health.current = 1 end
         local w = world:create_entity( destruct_type )
-        world:attach( self, w )
         world:get_level():fire( self, world:get_position( self ), w, 200 )
         self.data.summon = true
+        world:destroy(w)
     end
 end
 
@@ -91,6 +91,7 @@ register_blueprint "buff_cult_summon"
 
 register_blueprint "zealot_self_destruct"
 {
+    flags = { EF_NOPICKUP },
     attributes = {
         damage    = 25,
         explosion = 2,
@@ -123,6 +124,7 @@ register_blueprint "zealot_self_destruct"
 
 register_blueprint "cultist_self_destruct"
 {
+    flags = { EF_NOPICKUP },
     attributes = {
         damage    = 30,
         explosion = 2,
@@ -155,6 +157,7 @@ register_blueprint "cultist_self_destruct"
 
 register_blueprint "cultist_leader_self_destruct"
 {
+    flags = { EF_NOPICKUP },
     attributes = {
         damage    = 40,
         explosion = 2,

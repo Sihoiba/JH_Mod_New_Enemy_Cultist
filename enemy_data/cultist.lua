@@ -5,7 +5,7 @@ function spawn_fiend( self )
         local s  = world:get_level():add_entity( "fiend", c, nil )
         s.target.entity = world:get_player()
         s.data.ai.state = "find"
-        s.attributes.experience_value = summon_xp
+        s.attributes.experience_value = 20
         world:add_buff( s, "buff_cult_summon", 200 )
         world:play_sound( "summon", s )
         ui:spawn_fx( nil, "fx_summon", nil, c )
